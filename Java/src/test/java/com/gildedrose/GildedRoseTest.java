@@ -11,6 +11,7 @@ public class GildedRoseTest {
     private static final String AGED_BRIE_ITEM_NAME = "Aged Brie";
     private static final String SULFURAS_ITEM_NAME = "Sulfuras, Hand of Ragnaros";
     private static final String BACKSTAGE_PASS_ITEM_NAME = "Backstage passes to a TAFKAL80ETC concert";
+    private static final String CONJURED_ITEM_NAME = "Conjured Mana Cake";
 
     private static final int POSITIVE_DAYS_SELL_IN = 1;
     private static final int ZERO_DAYS_SELL_IN = 0;
@@ -20,7 +21,7 @@ public class GildedRoseTest {
     private static final int FIVE_DAYS_SELL_IN = 5;
 
     private static final int MAXIMUM_QUALITY = 50;
-    private static final int POSITIVE_QUALITY = 5;
+    private static final int POSITIVE_QUALITY = 15;
     private static final int ZERO_QUALITY = 0;
 
     @Test
@@ -204,5 +205,25 @@ public class GildedRoseTest {
         app.updateQuality();
 
         assertThat(app.items[0].quality, is(ZERO_QUALITY));
+    }
+
+    @Test
+    public void givenConjuredItemAndGreaterThanZeroDaysSellInWhenUpdateQualityThenQualityDegradesByTwo() {
+        Item[] items = new Item[]{new Item(CONJURED_ITEM_NAME, POSITIVE_DAYS_SELL_IN, POSITIVE_QUALITY)};
+        GildedRose app = new GildedRose(items);
+
+        app.updateQuality();
+
+        assertThat(app.items[0].quality, is(POSITIVE_QUALITY - 2));
+    }
+
+    @Test
+    public void givenConjuredItemAndZeroToNegativeDaysSellInWhenUpdateQualityThenQualityDegradesByFour() {
+        Item[] items = new Item[]{new Item(CONJURED_ITEM_NAME, ZERO_DAYS_SELL_IN, POSITIVE_QUALITY)};
+        GildedRose app = new GildedRose(items);
+
+        app.updateQuality();
+
+        assertThat(app.items[0].quality, is(POSITIVE_QUALITY - 4));
     }
 }

@@ -6,6 +6,7 @@ class GildedRose {
     private static final String AGED_BRIE = "Aged Brie";
     private static final String BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert";
     private static final String SULFURAS = "Sulfuras, Hand of Ragnaros";
+    private static final String CONJURED_NAME = "Conjured Mana Cake";
 
     private static final int MAXIMUM_QUALITY = 50;
     private static final int MINIMUM_QUALITY = 0;
@@ -16,6 +17,10 @@ class GildedRose {
     private static final int NEAR_BACKSTAGE_DEGRADATION_RATE = 3;
     private static final int FAR_BACKSTAGE_DEGRADATION_RATE = 2;
     private static final int STANDARD_DEGRADATION_RATE = 1;
+
+    private static final int STANDARD_ITEM_DEGRADATION_MULTIPLIER = 1;
+    private static final int CONJURED_ITEM_DEGRADATION_MULTIPLIER = 2;
+    private static final int EXPIRED_ITEM_DEGRADATION_MULTIPLIER = 2;
 
 
     public GildedRose(Item[] items) {
@@ -28,21 +33,33 @@ class GildedRose {
                 continue;
             }
 
-            int degradationRate = getDegradationRate(item);
+            int degradationRate = calculateDegradationRate(item);
             decrementQuality(item, degradationRate);
 
             item.sellIn--;
         }
     }
 
-    private int getDegradationRate(Item item) {
+    private int calculateDegradationMultiplier(Item item) {
+        boolean isConjured = item.name.equals(CONJURED_NAME);
+        int degradationMultiplier = STANDARD_ITEM_DEGRADATION_MULTIPLIER;
+        if (isConjured) {
+            degradationMultiplier *= CONJURED_ITEM_DEGRADATION_MULTIPLIER;
+        }
+        if (isPastSellByDate(item)) {
+            degradationMultiplier *= EXPIRED_ITEM_DEGRADATION_MULTIPLIER;
+        }
+        return degradationMultiplier;
+    }
+
+    private int calculateDegradationRate(Item item) {
         int degradationRate = STANDARD_DEGRADATION_RATE;
+        int degredationMultiplier = calculateDegradationMultiplier(item);
 
         if (item.name.equals(BACKSTAGE_PASSES)) {
             degradationRate = calculateBackstageDegradationRate(item);
-        } else if (isPastSellByDate(item)) {
-            degradationRate = degradationRate * 2;
         }
+        degradationRate *= degredationMultiplier;
 
         int appreciationRate = -degradationRate;
         return isDegrading(item) ? degradationRate : appreciationRate;
