@@ -29,7 +29,7 @@ class GildedRose {
 
     public void updateQuality() {
         for (Item item : items) {
-            if (item.name.equals(SULFURAS)) {
+            if (SULFURAS.equals(item.name)) {
                 continue;
             }
 
@@ -41,9 +41,8 @@ class GildedRose {
     }
 
     private int calculateDegradationMultiplier(Item item) {
-        boolean isConjured = item.name.equals(CONJURED_NAME);
         int degradationMultiplier = STANDARD_ITEM_DEGRADATION_MULTIPLIER;
-        if (isConjured) {
+        if (CONJURED_NAME.equals(item.name)) {
             degradationMultiplier *= CONJURED_ITEM_DEGRADATION_MULTIPLIER;
         }
         if (isPastSellByDate(item)) {
@@ -54,12 +53,12 @@ class GildedRose {
 
     private int calculateDegradationRate(Item item) {
         int degradationRate = STANDARD_DEGRADATION_RATE;
-        int degredationMultiplier = calculateDegradationMultiplier(item);
+        int degradationMultiplier = calculateDegradationMultiplier(item);
 
-        if (item.name.equals(BACKSTAGE_PASSES)) {
+        if (BACKSTAGE_PASSES.equals(item.name)) {
             degradationRate = calculateBackstageDegradationRate(item);
         }
-        degradationRate *= degredationMultiplier;
+        degradationRate *= degradationMultiplier;
 
         int appreciationRate = -degradationRate;
         return isDegrading(item) ? degradationRate : appreciationRate;
@@ -88,11 +87,11 @@ class GildedRose {
 
     private boolean isDegrading(Item item) {
         String itemName = item.name;
-        if (itemName.equals(BACKSTAGE_PASSES)) {
+        if (BACKSTAGE_PASSES.equals(itemName)) {
             return isPastSellByDate(item);
         }
 
-        return !itemName.equals(AGED_BRIE);
+        return !AGED_BRIE.equals(itemName);
     }
 
     private boolean isPastSellByDate(Item item) {
