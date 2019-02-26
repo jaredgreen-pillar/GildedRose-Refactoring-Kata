@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 public class GildedRoseTest {
 
-    private static final String STANDARD_ITEM_NAME = "foo";
+    private static final String STANDARD_ITEM_NAME = "Thunder-Forged Steel Longsword";
     private static final String AGED_BRIE_ITEM_NAME = "Aged Brie";
     private static final String SULFURAS_ITEM_NAME = "Sulfuras, Hand of Ragnaros";
     private static final String BACKSTAGE_PASS_ITEM_NAME = "Backstage passes to a TAFKAL80ETC concert";
