@@ -1,13 +1,22 @@
 package com.gildedrose;
 
 class GildedRose {
+    Item[] items;
+
     private static final String AGED_BRIE = "Aged Brie";
     private static final String BACKSTAGE_PASSES = "Backstage passes to a TAFKAL80ETC concert";
     private static final String SULFURAS = "Sulfuras, Hand of Ragnaros";
-    public static final int MAXIMUM_QUALITY = 50;
-    public static final int FAR_OUT_BACKSTAGE_PASS_SELLIN = 11;
-    public static final int CLOSE_BACKSTAGE_PASS_SELLIN = 6;
-    Item[] items;
+
+    private static final int MAXIMUM_QUALITY = 50;
+    private static final int MINIMUM_QUALITY = 0;
+
+    private static final int FAR_BACKSTAGE_PASS_SELLIN = 10;
+    private static final int NEAR_BACKSTAGE_PASS_SELLIN = 5;
+
+    private static final int NEAR_BACKSTAGE_DEGRADATION_RATE = 3;
+    private static final int FAR_BACKSTAGE_DEGRADATION_RATE = 2;
+    private static final int STANDARD_DEGRADATION_RATE = 1;
+
 
     public GildedRose(Item[] items) {
         this.items = items;
@@ -15,58 +24,61 @@ class GildedRose {
 
     public void updateQuality() {
         for (Item item : items) {
-            String itemName = item.name;
-            boolean isSulfuras = itemName.equals(SULFURAS);
-            boolean isBackstagePass = itemName.equals(BACKSTAGE_PASSES);
-            boolean isAgedBrie = itemName.equals(AGED_BRIE);
-
-            if (!isAgedBrie && !isBackstagePass) {
-                if (item.quality > 0) {
-                    if (!isSulfuras) {
-                        item.quality = item.quality - 1;
-                    }
-                }
-            } else {
-                if (item.quality < MAXIMUM_QUALITY) {
-                    item.quality = item.quality + 1;
-
-                    if (isBackstagePass) {
-                        if (item.sellIn < FAR_OUT_BACKSTAGE_PASS_SELLIN) {
-                            if (item.quality < MAXIMUM_QUALITY) {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-
-                        if (item.sellIn < CLOSE_BACKSTAGE_PASS_SELLIN) {
-                            if (item.quality < MAXIMUM_QUALITY) {
-                                item.quality = item.quality + 1;
-                            }
-                        }
-                    }
-                }
+            if (item.name.equals(SULFURAS)) {
+                continue;
             }
 
-            if (!isSulfuras) {
-                item.sellIn = item.sellIn - 1;
-            }
+            int degradationRate = getDegradationRate(item);
+            decrementQuality(item, degradationRate);
 
-            if (item.sellIn < 0) {
-                if (!isAgedBrie) {
-                    if (!isBackstagePass) {
-                        if (item.quality > 0) {
-                            if (!isSulfuras) {
-                                item.quality = item.quality - 1;
-                            }
-                        }
-                    } else {
-                        item.quality = 0;
-                    }
-                } else {
-                    if (item.quality < 50) {
-                        item.quality = item.quality + 1;
-                    }
-                }
-            }
+            item.sellIn--;
         }
+    }
+
+    private int getDegradationRate(Item item) {
+        int degradationRate = STANDARD_DEGRADATION_RATE;
+
+        if (item.name.equals(BACKSTAGE_PASSES)) {
+            degradationRate = calculateBackstageDegradationRate(item);
+        } else if (isPastSellByDate(item)) {
+            degradationRate = degradationRate * 2;
+        }
+
+        int appreciationRate = -degradationRate;
+        return isDegrading(item) ? degradationRate : appreciationRate;
+    }
+
+    private int calculateBackstageDegradationRate(Item item) {
+        if (isPastSellByDate(item)) {
+            return item.quality;
+        } else if (item.sellIn <= NEAR_BACKSTAGE_PASS_SELLIN) {
+            return NEAR_BACKSTAGE_DEGRADATION_RATE;
+        } else if (item.sellIn <= FAR_BACKSTAGE_PASS_SELLIN) {
+            return FAR_BACKSTAGE_DEGRADATION_RATE;
+        }
+        return STANDARD_DEGRADATION_RATE;
+    }
+
+    private void decrementQuality(Item item, int degradationRate) {
+        item.quality -= degradationRate;
+        if (item.quality >= MAXIMUM_QUALITY) {
+            item.quality = MAXIMUM_QUALITY;
+        }
+        if (item.quality <= MINIMUM_QUALITY) {
+            item.quality = MINIMUM_QUALITY;
+        }
+    }
+
+    private boolean isDegrading(Item item) {
+        String itemName = item.name;
+        if (itemName.equals(BACKSTAGE_PASSES)) {
+            return isPastSellByDate(item);
+        }
+
+        return !itemName.equals(AGED_BRIE);
+    }
+
+    private boolean isPastSellByDate(Item item) {
+        return item.sellIn <= 0;
     }
 }
